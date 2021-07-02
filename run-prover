@@ -2,14 +2,65 @@
 
 set -x
 
+MASTER_HEAP_SIZE=1g
+EXECUTOR_HEAP_SIZE=1GB
+EXECUTOR_CORES=4
+
+# Find commons.cli jar file
+COMMONS_CLI_JAR=commons-cli-1.2.jar
+if ! [ -e ${COMMONS_CLI_JAR} ] ; then
+    COMMONS_CLI_JAR=~/.m2/repository/commons-cli/commons-cli/1.2/${COMMONS_CLI_JAR}
+fi
+if ! [ -e ${COMMONS_CLI_JAR} ] ; then
+    echo No file ${COMMONS_CLI_JAR}
+    exit 1
+fi
+
+# Find the dizk jar file
+DIZK_JAR=neodizk-0.1.0.jar
+if ! [ -e ${DIZK_JAR} ] ; then
+    DIZK_JAR=target/${DIZK_JAR}
+fi
+if ! [ -e ${DIZK_JAR} ] ; then
+    echo No file ${DIZK_JAR}
+    exit 1
+fi
+
+HOSTNAME=`hostname`
+
+SPARK_DIR=`ls -d ~/spark*/`
+HADOOP_DIR=`ls -d ~/hadoop*/`
+CP=""
+for i in ${SPARK_DIR} ${HADOOP_DIR} ; do
+    CP=${CP}:${i}jars/'*:'${i}conf
+done
+
+# TODO:
+# If java cannot be found in the path, try:
+#  /usr/lib/jvm/adoptopenjdk-11-hotspot/bin/java
+
 # Standalone execution:
 #   mvn exec:java -Dexec.mainClass=prover.Prover -Dexec.args="${args}"
 
-# Execute via spark-submit
-/opt/spark/bin/spark-submit \
-    --conf "spark.driver.memory=4G" \
+# Execute via spark-submit:
+# spark-submit \
+#     --class prover.Prover \
+#     --jars ${COMMONS_CLI_JAR} \
+#     --master spark://${HOSTNAME}:7077 \
+#     --executor-cores ${EXECUTOR_CORES} \
+#     --executor-memory ${EXECUTOR_HEAP_SIZE} \
+#     ${DIZK_JAR} \
+#     $@
+
+# Manual execution (including control of master heap size)
+java \
+    -cp ${CP} \
+    -Xmx${MASTER_HEAP_SIZE} \
+    org.apache.spark.deploy.SparkSubmit \
+    --master spark://${HOSTNAME}:7077 \
     --class prover.Prover \
-    --jars ~/.m2/repository/commons-cli/commons-cli/1.2/commons-cli-1.2.jar \
-    --master spark://cluster-master:7077 \
-    /home/dizk/target/neodizk-0.1.0.jar \
+    --jars ${COMMONS_CLI_JAR} \
+    --executor-cores ${EXECUTOR_CORES} \
+    --executor-memory ${EXECUTOR_HEAP_SIZE} \
+    ${DIZK_JAR} \
     $@
