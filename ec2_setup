@@ -4,9 +4,11 @@ MAVEN_VERSION=3.6.3
 
 sudo amazon-linux-extras install java-openjdk11
 
+echo Installing maven ${MAVEN_VERSION} ...
 sudo mkdir -p /usr/share/maven
 sudo curl -fsSL https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
     | sudo tar -xzC /usr/share/maven --strip-components=1
 sudo ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
 
 export MAVEN_HOME=/usr/share/maven
+echo Installed at ${MAVEN_HOME}
