@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+# set -x
+set -e
+
+# Assume that assignments have been generated into ../zeth/build
+
+ASSIGNMENTS_DIR=../zeth/build
+ZETH_TOOL=../zeth/build/zeth_tool/zeth-tool
+
+# 1 - jsin/jsout value
+function setup_files() {
+    tar -vxjf ${ASSIGNMENTS_DIR}/zeth_assignment_$1_$1.tar.bz2
+    if ! [ -e pk_$1_$1.bin ] ; then
+        ${ZETH_TOOL} split-keypair --pk-file vk_$1_$1.bin keypair_$1_$1.bin
+    fi
+    if ! [ -e pk_$1_$1.bin ] ; then
+        echo no file pk_$1_$1.bin
+        exit 1
+    fi
+    if ! [ -e assignment_$1_$1.bin ] ; then
+        echo no file assignment_$1_$1.bin
+        exit 1
+    fi
+}
+
+# 1 - jsin/jsout value
+function remove_files() {
+    rm *_$1_$1.bin
+}
+
+# 1 - jsin/jsout value
+# 2 - iteration
+function profile_for_jsinout_iteration() {
+    echo "=============================================="
+    echo "  PROFILE: $1_$1 ITERATION: $2"
+    echo "=============================================="
+    echo $1_$1 $2
+    time ./run-prover ../zeth/build/pk_$1_$1.bin assignment_6_6.bin > profile_$1_$1_$2.txt 2>&1
+}
+
+# 1 - jsin/jsout value
+function profile_for_jsinout() {
+    echo "=============================================="
+    echo "  PROFILE: $1_$1"
+    echo "=============================================="
+
+    setup_files $1
+
+    profile_for_jsinout_iteration $1 1
+    profile_for_jsinout_iteration $1 2
+    profile_for_jsinout_iteration $1 3
+
+    remove_files $1
+}
+
+# Run for a single JSIN/OUT value, or run over all values.
+if [ "" != "$1" ] ; then
+    profile_for_jsinout $1
+else
+    profile_for_jsinout 8
+    profile_for_jsinout 16
+    profile_for_jsinout 32
+    profile_for_jsinout 64
+fi
