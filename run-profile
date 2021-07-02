@@ -12,7 +12,7 @@ ZETH_TOOL=../zeth/build/zeth_tool/zeth-tool
 function setup_files() {
     tar -vxjf ${ASSIGNMENTS_DIR}/zeth_assignment_$1_$1.tar.bz2
     if ! [ -e pk_$1_$1.bin ] ; then
-        ${ZETH_TOOL} split-keypair --pk-file vk_$1_$1.bin keypair_$1_$1.bin
+        ${ZETH_TOOL} split-keypair --pk-file pk_$1_$1.bin keypair_$1_$1.bin
     fi
     if ! [ -e pk_$1_$1.bin ] ; then
         echo no file pk_$1_$1.bin
