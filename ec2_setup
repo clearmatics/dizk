@@ -2,7 +2,7 @@
 
 MAVEN_VERSION=3.6.3
 
-sudo amazon-linux-extras install java-openjdk11
+sudo amazon-linux-extras install -y java-openjdk11
 
 echo Installing maven ${MAVEN_VERSION} ...
 sudo mkdir -p /usr/share/maven
