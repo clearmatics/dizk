@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# set -x
+set -x
 set -e
 
 # Assume that assignments have been generated into ../zeth/build
@@ -10,7 +10,10 @@ ZETH_TOOL=../zeth/build/zeth_tool/zeth-tool
 
 # 1 - jsin/jsout value
 function setup_files() {
-    tar -vxjf ${ASSIGNMENTS_DIR}/zeth_assignment_$1_$1.tar.bz2
+    if ! [ -e assignment_$1_$1.bin ] ; then
+        tar -vxjf ${ASSIGNMENTS_DIR}/zeth_assignment_$1_$1.tar.bz2
+    fi
+
     if ! [ -e pk_$1_$1.bin ] ; then
         ${ZETH_TOOL} split-keypair --pk-file pk_$1_$1.bin keypair_$1_$1.bin
     fi
@@ -35,8 +38,7 @@ function profile_for_jsinout_iteration() {
     echo "=============================================="
     echo "  PROFILE: $1_$1 ITERATION: $2"
     echo "=============================================="
-    echo $1_$1 $2
-    time ./run-prover ../zeth/build/pk_$1_$1.bin assignment_6_6.bin > profile_$1_$1_$2.txt 2>&1
+    time ./run-prover pk_$1_$1.bin assignment_$1_$1.bin > profile_$1_$1_$2.txt 2>&1
 }
 
 # 1 - jsin/jsout value
